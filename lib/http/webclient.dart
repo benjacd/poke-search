@@ -24,15 +24,30 @@ class LoggingInterceptor implements InterceptorContract {
   }
 }
 
-Future<Pokemon?> fetch(String item) async {
+Future<List<Pokemon>> fetchPokemons() async {
   Client client = InterceptedClient.build(
     interceptors: [LoggingInterceptor()],
     requestTimeout: const Duration(seconds: 5),
   );
 
-  final Response response =
-      await client.get(Uri.parse('https://pokeapi.co/api/v2/pokemon/$item/'));
+  final List<Pokemon> pokemonList = List.empty(growable: true);
 
-  if (response.statusCode != 200) return null;
-  return Pokemon.fromJson(jsonDecode(response.body));
+  String nextUrl = 'https://pokeapi.co/api/v2/pokemon?limit=10';
+  for (int i = 0; i != 5; i++) {
+    final Response response = await client.get(Uri.parse(nextUrl));
+    final List<dynamic> results = jsonDecode(response.body)['results'];
+    for (final dynamic result in results) {
+      final url = result['url'] as String;
+      client.get(Uri.parse(url)).then(
+            (value) => pokemonList.add(
+              Pokemon.fromJson(
+                jsonDecode(value.body),
+              ),
+            ),
+          );
+    }
+    nextUrl = jsonDecode(response.body)['next'];
+  }
+
+  return pokemonList;
 }

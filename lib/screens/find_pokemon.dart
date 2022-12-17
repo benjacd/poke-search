@@ -2,6 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:lite_dex/http/webclient.dart';
 import 'package:lite_dex/resources/constants.dart';
 import 'package:lite_dex/screens/pokemon_info.dart';
+import 'package:lite_dex/model/pokemon.dart';
+
+class PokemonList extends StatelessWidget {
+  final List<Pokemon> pokemons;
+
+  const PokemonList({Key? key, required this.pokemons}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lista de Pokémon'),
+      ),
+      body: ListView.builder(
+        itemCount: pokemons.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(pokemons[index].name),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PokemonInfo(pokemon: pokemons[index]),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
 
 class FindPokemonByName extends StatefulWidget {
   const FindPokemonByName({Key? key}) : super(key: key);
@@ -12,7 +41,6 @@ class FindPokemonByName extends StatefulWidget {
 
 class _FindPokemonByNameState extends State<FindPokemonByName>
     with SingleTickerProviderStateMixin {
-  final TextEditingController _formFieldController = TextEditingController();
   late AnimationController _controller;
 
   @override
@@ -33,28 +61,17 @@ class _FindPokemonByNameState extends State<FindPokemonByName>
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          TextFormField(
-            controller: _formFieldController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: Constants.findPokemonFormHintText,
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: ElevatedButton(
               onPressed: () {
-                final uri = _formFieldController.text.toLowerCase().trim();
-                _formFieldController.text = '';
-                fetch(uri).then(
-                  (pokemon) => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => PokemonInfo(pokemon: pokemon),
-                    ),
-                  ),
-                );
+                fetchPokemons().then((pokemons) => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PokemonList(pokemons: pokemons),
+                      ),
+                    ));
               },
-              child: const Text(Constants.submitButtonText),
+              child: const Text('Mostrar los 10 Pokémon'),
             ),
           ),
         ],
