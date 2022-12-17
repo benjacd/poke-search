@@ -1,4 +1,4 @@
-# lite_dex
+# poke-search
 
 A simple Pokedex consuming [Pokemon free API](https://pokeapi.co/) for study purposes. 
 
